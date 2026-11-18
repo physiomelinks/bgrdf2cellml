@@ -7,3 +7,5 @@ Work in progress. This first part is the exact algebra it is built on:
 - `Q`: exact rationals on BigInt, reading decimals such as `0.726` exactly;
 - `Polynomial`: sparse multivariate polynomials with rational coefficients (add, multiply, substitute, evaluate, content, exact division);
 - `determinant` and `cofactor`: Bareiss fraction-free elimination over polynomials, which gives a cycle's King–Altman state weights as cofactors of its rate matrix.
+- `normalise`: turns a model's expressions into exact quotients of polynomials. It inlines definitions, cancels `RT·ln(K·q)/RT` so that `exp(u_f/RT)` becomes the mass-action product (`K₁q₁·(K₂q₂)²`), and writes every other exponent term, such as `z·F·u_m/RT`, as an *exp atom*. Atoms whose exponents are multiples of each other share one atom, so `exp(F·u/(2RT))² / exp(F·u/RT)` is 1. Constructs it can't represent (piecewise, other functions, a logarithm outside an exponent) are reported as a `SteadyStateError` with an issue code.
+- `fractionToAst` and `polynomialToAst` write the results back as `@physiomelinks/math-ast` trees, and `evaluateAst` evaluates a tree numerically, for checking.
