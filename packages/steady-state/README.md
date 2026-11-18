@@ -16,3 +16,7 @@ Work in progress. This first part is the exact algebra it is built on:
   - returns the flux as an exact quotient of polynomials, in the parameters, the held species, the total `q_tot` and the exp atoms.
 
   When it can't reduce a model it returns issues (`no-conservation`, `nonlinear-in-states`, `disconnected-cycle`, `unknown-variable`) instead.
+- **Rapid equilibrium:** give `solveCycle` the rate constants of fast reactions (`fast: ['kappa_R3', 'kappa_R4']`) and it takes their limit by Cha's method.
+  - States joined by fast reactions are pooled in their equilibrium proportions, and the pooled cycle is solved.
+  - A flux through a fast reaction is rewritten in terms of slow ones using the steady-state balances.
+  - This reproduces GLUT2's eqs 19–20 (Hunter et al. 2025) and Kir's eq 19 (sodium homeostasis paper).

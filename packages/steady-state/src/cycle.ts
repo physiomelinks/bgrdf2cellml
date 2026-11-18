@@ -18,6 +18,7 @@ import { normalise, type ExpAtom } from './normalise.js'
 import * as F from './poly/fraction.js'
 import type { Fraction } from './poly/fraction.js'
 import { cofactor } from './poly/matrix.js'
+import { rapidEquilibriumWeights, withoutFastReactions } from './rapid.js'
 import { Polynomial, gcdMonomials, monomialKey, type Monomial } from './poly/polynomial.js'
 
 export interface CycleSpec {
@@ -29,6 +30,11 @@ export interface CycleSpec {
   readonly total?: string
   /** Variables to keep as they are rather than inline, such as a membrane potential. */
   readonly opaque?: readonly string[]
+  /**
+   * Rate constants of reactions taken to be infinitely fast (rapid
+   * equilibrium), such as `kappa_R3` for a binding step.
+   */
+  readonly fast?: readonly string[]
 }
 
 export interface CycleSolution {
@@ -111,9 +117,14 @@ function solve(equations: readonly Equation[], spec: CycleSpec): CycleSolution {
     return states.map((q) => coefficients.get(q) ?? Polynomial.zero)
   })
 
-  // Cofactors along the last row: a state's weight, up to a common factor
+  const fast = new Set(spec.fast ?? [])
+  for (const kappa of fast)
+    if (!matrix.some((row) => row.some((a) => a.has(kappa))))
+      fail('unknown-variable', `${kappa} isn't a rate constant of any of the cycle's reactions`, kappa)
+
+  // Cofactors along the last row (or of the pooled cycle): a state's weight, up to a common factor
   const last = states.length - 1
-  let weights = states.map((_q, i) => cofactor(matrix, last, i))
+  let weights = fast.size > 0 ? rapidEquilibriumWeights(matrix, fast) : states.map((_q, i) => cofactor(matrix, last, i))
   const sum = weights.reduce((a, b) => a.add(b))
   if (sum.isZero()) fail('disconnected-cycle', `The states ${states.join(', ')} don't form one connected cycle, so their steady state isn't unique`)
 
@@ -124,8 +135,15 @@ function solve(equations: readonly Equation[], spec: CycleSpec): CycleSolution {
   weights = weights.map((w) => (w.isZero() ? w : w.divideTerm(common ?? [], { n: BigInt(sign), d: 1n })))
   const weightSum = weights.reduce((a, b) => a.add(b))
 
-  // The flux, with q_j = total · w_j / Σw
-  const fluxCoefficients = linear(flux, 'The flux')
+  // The flux, with q_j = total · w_j / Σw; through slow reactions only, in the fast limit
+  let fluxFraction = flux
+  if (fast.size > 0) {
+    for (const [j, f] of stateRates.entries())
+      if (!F.isPolynomial(f)) fail('unsupported-construct', `d${states[j]}/dt has a denominator, which the fast limit doesn't handle`, states[j])
+    const rows = stateRates.map((f) => f.num)
+    fluxFraction = F.fraction(withoutFastReactions(flux.num, rows.map((r) => r.mul(flux.den)), fast), flux.den)
+  }
+  const fluxCoefficients = linear(fluxFraction, 'The flux')
   const q = Polynomial.variable(total)
   let numerator = (fluxCoefficients.get('') ?? Polynomial.zero).mul(weightSum)
   states.forEach((s, i) => {
@@ -133,7 +151,7 @@ function solve(equations: readonly Equation[], spec: CycleSpec): CycleSolution {
     if (c !== undefined) numerator = numerator.add(c.mul(weights[i]!).mul(q))
   })
   return {
-    flux: F.fraction(numerator, flux.den.mul(weightSum)),
+    flux: F.fraction(numerator, fluxFraction.den.mul(weightSum)),
     weights: new Map(states.map((s, i) => [s, weights[i]!])),
     matrix,
     total,
