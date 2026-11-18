@@ -26,3 +26,7 @@ export {
   type Normalised,
 } from './normalise.js'
 export { solveCycle, splitEquations, type CycleSolution, type CycleSpec, type Result, type SplitEquations } from './cycle.js'
+export { commonForm, commonFormEquations, type CommonForm, type CommonFormOptions, type Lumped, type PhiTerm } from './normalForm.js'
+export { boltzmannPairs, deriveSteadyState, type SteadyStateResult, type SteadyStateSpec } from './derive.js'
+export { verify, type VerifyOptions, type VerifyReport } from './verify.js'
+export { laurentAst, type Laurent as LaurentMonomial } from './laurent.js'
