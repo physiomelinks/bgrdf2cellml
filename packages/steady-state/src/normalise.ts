@@ -396,8 +396,17 @@ function atomAst(atom: ExpAtom, k: number): AstNode {
 }
 
 /** A polynomial as an expression tree, with its atoms written as `exp(…)`. */
-export function polynomialToAst(p: Polynomial, atoms: ReadonlyMap<string, ExpAtom> = new Map()): AstNode {
+export function polynomialToAst(p: Polynomial, atoms: ReadonlyMap<string, ExpAtom> = new Map(), { factor = true }: { factor?: boolean } = {}): AstNode {
   if (p.isZero()) return cn(0)
+  // What every term shares comes out front: K_2 κ_1 (K_1 + K_4), not K_1 K_2 κ_1 + K_2 K_4 κ_1
+  if (factor && p.size > 1) {
+    const { monomial: m, coefficient } = p.content()
+    if (m.length > 0 || !Q.isOne(coefficient)) {
+      const common = polynomialToAst(Polynomial.term(coefficient, m), atoms, { factor: false })
+      const rest = polynomialToAst(p.divideTerm(m, coefficient), atoms, { factor: false })
+      return common.type === 'Multiply' ? times(...common.children, rest) : times(common, rest)
+    }
+  }
   const termAst = (coefficient: Rational, m: readonly (readonly [string, number])[]): AstNode => {
     const factors: AstNode[] = []
     if (!Q.isOne(coefficient)) factors.push(rationalAst(coefficient))

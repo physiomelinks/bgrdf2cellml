@@ -129,3 +129,18 @@ describe('normalise', () => {
     expect(issue(ci('a'), new Map<string, AstNode>([['a', plus(ci('b'), ln(ci('a')))]]))).toBe('circular-definition')
   })
 })
+
+describe('writing polynomials', () => {
+  it('takes common factors out of a sum', async () => {
+    const { polynomialToAst } = await import('../src/index.js')
+    const [K1, K2, K4, k1] = ['K_1', 'K_2', 'K_4', 'kappa_1'].map(v)
+    const p = K1!.mul(K2!).mul(k1!).add(K2!.mul(K4!).mul(k1!)).scale(2)
+    const node = polynomialToAst(p)
+    // 2 · K_2 · κ_1 · (K_1 + K_4)
+    expect(node.type).toBe('Multiply')
+    expect(node.type === 'Multiply' && node.children.at(-1)!.type).toBe('Add')
+    expect(evaluateAst(node, { K_1: 2, K_2: 3, K_4: 5, kappa_1: 7 })).toBeCloseTo(2 * 3 * 7 * (2 + 5), 12)
+    // A sum with nothing in common is left as it is
+    expect(polynomialToAst(K1!.add(K4!)).type).toBe('Add')
+  })
+})

@@ -26,6 +26,8 @@ describe('the common form', () => {
     expect(c.reactants).toEqual([['qbar_Ao', 1]])
     expect(c.products).toEqual([['qbar_Ai', 1]])
     expect(c.phi.terms.map((t) => t.k?.name)).toEqual(expect.arrayContaining(['k_Ao_GLUT2', 'k_Ai_GLUT2', 'k_Ai_Ao_GLUT2']))
+    expect(c.phi.terms[0]!.monomial).toEqual([]) // 1 + …
+    expect(c.phi.terms.at(-1)!.k?.name).toBe('k_Ai_Ao_GLUT2') // … + q̄o q̄i/k
     // Table 3's parameters give eq 20's km values
     const values = { K_1: 33.2, K_2: 4.25e3, K_3: 344.59, K_4: 1.99, kappa_R1: 0.36, kappa_R2: 0.26, q_tot: 1 }
     const k = (name: string) => evaluateWith(result, ci(name), values)
@@ -69,6 +71,24 @@ describe('the common form', () => {
     const uRev = evaluateWith(result, c.reversalPotential!, values)
     expect(uRev).toBeCloseTo((RT / (2 * F)) * Math.log((qb.Nao / qb.Nai) ** 2 * (qb.Glco / qb.Glci)), 12)
     expect(verify(sglt1(), spec, result, { fastScale: 1e9 }).maxRelativeError).toBeLessThan(1e-5)
+  })
+
+  it('asks for held species when the model has none as states', () => {
+    // Michaelis–Menten with S and P as constants
+    const d = (q: string) => ({ type: 'Derivative' as const, expression: ci(q), variable: ci('t') })
+    const v1 = { type: 'Multiply' as const, children: [ci('k1'), minus({ type: 'Multiply' as const, children: [ci('E'), ci('S')] }, ci('C'))] }
+    const v2 = { type: 'Multiply' as const, children: [ci('k2'), minus(ci('C'), { type: 'Multiply' as const, children: [ci('E'), ci('P')] })] }
+    const equations = [
+      { type: 'Equal' as const, left: ci('v1'), right: v1 },
+      { type: 'Equal' as const, left: ci('v2'), right: v2 },
+      { type: 'Equal' as const, left: d('E'), right: minus(ci('v2'), ci('v1')) },
+      { type: 'Equal' as const, left: d('C'), right: minus(ci('v1'), ci('v2')) },
+    ]
+    const without = deriveSteadyState(equations, { cycleStates: ['E', 'C'], flux: 'v1' })
+    expect(without.issues.map((i) => i.code)).toEqual(['no-held-species'])
+    const named = deriveSteadyState(equations, { cycleStates: ['E', 'C'], flux: 'v1', solutes: ['S', 'P'] })
+    expect(named.issues).toEqual([])
+    expect(named.common!.reactants).toEqual([['S', 1]])
   })
 
   it('reports SGLT1 with slippage as exact but not in the common form', () => {

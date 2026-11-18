@@ -122,6 +122,8 @@ export function commonForm(solution: CycleSolution, options: CommonFormOptions):
       variables.push({ name, value: times(ci(K), ci(q)) })
     } else held.set(q, q)
   }
+  if (held.size === 0)
+    fail('no-held-species', 'No held species were found: name the species the cycle moves (constants or states outside it) in `solutes`')
   const isHeld = (v: string) => held.has(v)
   const isAtom = (v: string) => atoms.has(v)
   const drive = [...held.keys(), ...atoms.keys()]
@@ -156,7 +158,9 @@ export function commonForm(solution: CycleSolution, options: CommonFormOptions):
   const M = multiply(multiply(Af, Pd), form === 'ratio' ? P1 : [])
 
   // Φ = (1/M) Σ (D_m/D_0) m, normalised by D's term free of held species when there is one
-  const dGroups = [...D.coefficientsIn(drive).values()]
+  // Φ reads 1 + q̄o/k + q̄i/k + q̄o q̄i/k: the constant first, then by degree
+  const degree = (m: Laurent) => m.filter(([v]) => !isAtom(v)).reduce((sum, [, e]) => sum + Math.abs(e), 0)
+  const dGroups = [...D.coefficientsIn(drive).values()].sort((a, b) => degree(a.monomial) - degree(b.monomial))
   const D0 = dGroups.find((g) => g.monomial.length === 0)?.coefficient
   let kappa = F.fraction(cf, D0 ?? Polynomial.one)
   let phiTerms: { monomial: Laurent; k?: Fraction; coefficient?: Fraction }[] = dGroups.map(({ monomial, coefficient }) =>

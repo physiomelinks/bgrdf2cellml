@@ -41,3 +41,18 @@ It is built from these parts:
   - `relations` adds constraints such as Kir's charge balance before solving.
   - A flux with more than one cycle (slippage) is still solved exactly, but is reported as not having this form.
 - `verify` checks a result numerically, independently of the algebra: at random values it solves the model's own cycle equations with floating-point linear algebra.
+- `suggestSpecs` finds a model's cycles, so a host can offer defaults:
+  - the sets of states whose rates sum to zero and form a closed loop;
+  - their held species;
+  - which reactions to take as fast: those that bind or release a held species, as long as one reaction stays slow;
+  - the flux to report;
+  - membrane potentials to keep opaque;
+  - given values, transformer ratios recognised as multiples of F.
+- `reduceModel` writes the **steady-state version of a whole model**:
+  - the cycle's states and reactions are removed;
+  - every use of a cycle reaction's flux becomes a multiple of the derived flux;
+  - the common form's definitions are added;
+  - the rest of the model is kept as it was;
+  - sections are returned for laying it out.
+
+On CellML that bg2cellml generates, it finds, solves and reduces a GLUT2 model to Table 3's km values, and finds an electrogenic uniporter's charge through its transformers (`test/bg2cellml.test.ts`).

@@ -1,6 +1,10 @@
 # Releasing
 
-The three packages, `@physiomelinks/math-ast`, `@physiomelinks/cellml-units` and `@physiomelinks/bg2cellml`, are released together with one version number, using [Changesets](https://github.com/changesets/changesets). `examples/browser` is private and never released.
+The packages are released with [Changesets](https://github.com/changesets/changesets).
+
+- `@physiomelinks/math-ast`, `@physiomelinks/cellml-units` and `@physiomelinks/bg2cellml` are released together with one version number.
+- `@physiomelinks/steady-state` has its own version.
+- `examples/browser` is private and never released.
 
 ## Recording a change
 
@@ -10,7 +14,7 @@ With a pull request that changes what a package does, add a changeset:
 yarn changeset
 ```
 
-Choose the packages and the bump (patch, minor or major), and write a line for the changelog. It goes in `.changeset/` as a Markdown file; commit it with the change. The three packages are a fixed group in `.changeset/config.json`, so whichever bump is the largest applies to all three.
+Choose the packages and the bump (patch, minor or major), and write a line for the changelog. It goes in `.changeset/` as a Markdown file; commit it with the change. math-ast, cellml-units and bg2cellml are a fixed group in `.changeset/config.json`, so whichever bump is the largest applies to all three; steady-state is bumped on its own.
 
 ## Making a release
 
@@ -36,7 +40,7 @@ node tools/release/check-install.mjs --packed          # yarn pack each package,
 node tools/release/check-install.mjs --version 0.1.0   # from npm
 ```
 
-Either way it makes an empty npm project in a temporary directory, installs the three packages with libcellml.js, oxigraph and `@xmldom/xmldom`, converts BG-RDF's `example_RC` in Node, and typechecks a TypeScript file against the packages' declarations (with `skipLibCheck` off; only oxigraph's own declarations, which don't pass that check, are excused).
+Either way it makes an empty npm project in a temporary directory, installs the packages with libcellml.js, oxigraph and `@xmldom/xmldom`, converts BG-RDF's `example_RC` and derives a Michaelis–Menten flux in Node, and typechecks a TypeScript file against the packages' declarations (with `skipLibCheck` off; only oxigraph's own declarations, which don't pass that check, are excused).
 
 ## The first release (0.1.0), by hand
 
@@ -61,5 +65,5 @@ npm only lets a trusted publisher be added to a package that already exists, so 
 
    Do this, and step 4, **before** merging the 8.2 pull request. Merging runs the Release workflow, which then finds 0.1.0 already on npm, publishes nothing, and checks the install from npm. Merged first, that run would fail, as the workflow can't publish until the trusted publishers exist.
 
-4. On npmjs.com, for each of the three packages: *Settings* → *Trusted publishing* → *GitHub Actions*, with organisation or user `physiomelinks`, repository `celldl2cellml`, workflow file `release.yml`, and no environment.
+4. On npmjs.com, for each package (`@physiomelinks/steady-state` too): *Settings* → *Trusted publishing* → *GitHub Actions*, with organisation or user `physiomelinks`, repository `celldl2cellml`, workflow file `release.yml`, and no environment.
 5. Then, in each package's *Settings* → *Publishing access*, choose *Require two-factor authentication and disallow tokens*, so only the workflow (and you, with two-factor) can publish.

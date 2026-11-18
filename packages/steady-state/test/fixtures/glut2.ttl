@@ -1,0 +1,43 @@
+@prefix bgf: <https://bg-rdf.org/ontologies/bondgraph-framework#> .
+@prefix cdt: <https://w3id.org/cdt/> .
+@prefix tpl: <https://bg-rdf.org/templates/> .
+
+@prefix : <#> .
+
+# GLUT2's alternating-access cycle (Hunter, Ai & Nickerson 2025, Fig 6b and
+# Table 3): E1 outward-facing, E2 outward with glucose, E3 inward with glucose,
+# E4 inward-facing; R3 and R4 bind and release glucose.
+
+:model
+    a bgf:BondgraphModel ;
+    bgf:usesTemplate tpl:chemical.ttl ;
+    bgf:hasBondElement :E1, :E2, :E3, :E4, :Ao, :Ai, :R1, :R2, :R3, :R4 .
+
+:E1 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E1" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "33.2 mol-1"^^cdt:ucum ] .
+:E2 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E2" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "4250 mol-1"^^cdt:ucum ] .
+:E3 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E3" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "344.59 mol-1"^^cdt:ucum ] .
+:E4 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E4" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "1.99 mol-1"^^cdt:ucum ] .
+:Ao a bgf:ChemicalStorageNode ; bgf:hasSpecies "Ao" ; bgf:hasValue "5 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "1 mol-1"^^cdt:ucum ] .
+:Ai a bgf:ChemicalStorageNode ; bgf:hasSpecies "Ai" ; bgf:hasValue "1 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "1 mol-1"^^cdt:ucum ] .
+
+:R1 a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "0.36 mol/s"^^cdt:ucum ] .
+:R2 a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "0.26 mol/s"^^cdt:ucum ] .
+:R3 a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "1.01e5 mol/s"^^cdt:ucum ] .
+:R4 a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "1.01e4 mol/s"^^cdt:ucum ] .
+
+:E4.R1 bgf:hasSource :E4 ; bgf:hasTarget :R1 .
+:R1.E1 bgf:hasSource :R1 ; bgf:hasTarget :E1 .
+:E2.R2 bgf:hasSource :E2 ; bgf:hasTarget :R2 .
+:R2.E3 bgf:hasSource :R2 ; bgf:hasTarget :E3 .
+:E1.R3 bgf:hasSource :E1 ; bgf:hasTarget :R3 .
+:Ao.R3 bgf:hasSource :Ao ; bgf:hasTarget :R3 .
+:R3.E2 bgf:hasSource :R3 ; bgf:hasTarget :E2 .
+:E3.R4 bgf:hasSource :E3 ; bgf:hasTarget :R4 .
+:R4.E4 bgf:hasSource :R4 ; bgf:hasTarget :E4 .
+:R4.Ai bgf:hasSource :R4 ; bgf:hasTarget :Ai .

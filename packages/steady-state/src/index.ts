@@ -30,3 +30,6 @@ export { commonForm, commonFormEquations, type CommonForm, type CommonFormOption
 export { boltzmannPairs, deriveSteadyState, type SteadyStateResult, type SteadyStateSpec } from './derive.js'
 export { verify, type VerifyOptions, type VerifyReport } from './verify.js'
 export { laurentAst, type Laurent as LaurentMonomial } from './laurent.js'
+export { reduceModel, type ReduceOptions, type ReducedModel, type ReducedSection } from './reduce.js'
+export { suggestSpecs, type SuggestOptions, type SuggestedCycle } from './suggest.js'
+export { dependents, expandLinear, type LinearTerm } from './linear.js'
