@@ -1,4 +1,4 @@
-import { ci, cn, minus, plus, type AstNode, type Equation } from '@physiomelinks/math-ast'
+import { ci, cn, minus, plus, walk, type AstNode, type Equation } from '@physiomelinks/math-ast'
 import { describe, expect, it } from 'vitest'
 
 import { deriveSteadyState, evaluateAst, reduceModel, splitEquations, suggestSpecs, verify, type SteadyStateSpec } from '../src/index.js'
@@ -108,5 +108,22 @@ describe('reduceModel', () => {
     const { reduced, rates, valueOf, v } = checkHeld([...full, ...extra], spec)
     expect(reduced.equations.map(name)).toEqual(expect.arrayContaining(['v_use', 'dq_B']))
     expect(valueOf(rates.get('q_Ai')!)).toBeCloseTo(v - valueOf(ci('v_use')), 12)
+  })
+})
+
+describe('reduceModel keep', () => {
+  it('keeps a reaction’s flux at its steady state, so what names it still can', () => {
+    const spec: SteadyStateSpec = { label: 'SGLT1', cycleStates: ['q_1', 'q_2', 'q_3', 'q_4', 'q_5', 'q_6'], flux: 'v_R3', fast: ['kappa_R1', 'kappa_R2', 'kappa_R4', 'kappa_R5'] }
+    const full = sglt1()
+    const result = deriveSteadyState(full, spec)
+    const reduced = reduceModel(full, spec, result, { keep: ['v_R1', 'v_R5'] })
+    const { definitions, rates } = splitEquations(reduced.equations as Equation[])
+    // Each kept flux is the flux itself (once per cycle), and the held species' rates use it
+    expect(definitions.get('v_R1')).toEqual(ci('v_SGLT1'))
+    expect(definitions.get('v_R5')).toEqual(ci('v_SGLT1'))
+    expect([...walk(rates.get('q_Nao')!)].some((n) => n.type === 'Identifier' && n.name === 'v_R1')).toBe(true)
+    expect(reduced.sections.map((s) => s.title)).toContain('Kept at steady state')
+    // A kept variable isn't a parameter the model lacks
+    expect(reduced.parameters).toEqual(['q_tot'])
   })
 })

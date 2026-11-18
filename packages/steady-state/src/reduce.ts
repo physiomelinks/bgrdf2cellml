@@ -32,6 +32,11 @@ export interface ReducedModel {
 export interface ReduceOptions {
   /** The flux's variable name; `v_<label>` (or `v_ss`) if not given. */
   readonly flux?: string
+  /**
+   * Variables of the cycle to keep, at their steady state: a reaction's flux as its multiple of the flux
+   * (`v_R1 = v_ss`, `v_Na = 2 v_ss`), so what refers to it by name, such as an annotation or a port, still can.
+   */
+  readonly keep?: Iterable<string>
 }
 
 const leftName = (e: Equation): string =>
@@ -80,10 +85,17 @@ export function reduceModel(equations: readonly Equation[], spec: SteadyStateSpe
     replacements.set(name, node)
     return node
   }
+  const keep = new Set(options.keep ?? [])
+  /** A kept variable: a reaction's flux as its multiple of the flux, a sum of fluxes rewritten. */
+  const atomicOrRewritten = (name: string, right: AstNode): AstNode => {
+    const terms = expandLinear(ci(name), definitions, isDependent)
+    return terms.length === 1 && terms[0]!.flux === name ? replacement(name) : rewrite(right)
+  }
+
   /** Inline sums of fluxes; replace a reaction's flux or a state by its steady state. */
   const rewrite = (node: AstNode): AstNode => {
     if (node.type === 'Identifier') {
-      if (!isDependent(node.name)) return node
+      if (!isDependent(node.name) || keep.has(node.name)) return node
       const definition = definitions.get(node.name)
       const terms = definition === undefined ? [] : expandLinear(ci(node.name), definitions, isDependent)
       const atomic = definition === undefined || (terms.length === 1 && terms[0]!.flux === node.name)
@@ -104,7 +116,9 @@ export function reduceModel(equations: readonly Equation[], spec: SteadyStateSpe
     if (e.left.type === 'Derivative') {
       if (cycle.has(name)) continue
       if (dependsOnCycle(e.right, isDependent)) held.push(eq(e.left, rewrite(e.right)))
-    } else if (e.left.type === 'Identifier' && isDependent(name) && !used.has(name)) outputs.push(eq(e.left, rewrite(e.right)))
+    } else if (e.left.type === 'Identifier' && isDependent(name) && (keep.has(name) || !used.has(name))) {
+      outputs.push(eq(e.left, keep.has(name) ? atomicOrRewritten(name, e.right) : rewrite(e.right)))
+    }
   }
 
   // Keep what the kept equations need, and the rest of the model unchanged
@@ -141,7 +155,7 @@ export function reduceModel(equations: readonly Equation[], spec: SteadyStateSpe
     sections: [
       { title: 'Steady-state flux', variables: flux_.map(leftName) },
       ...(held.length > 0 ? [{ title: 'Held species', variables: held.map(leftName) }] : []),
-      ...(outputs.length > 0 ? [{ title: 'Outputs', variables: outputs.map(leftName) }] : []),
+      ...(outputs.length > 0 ? [{ title: 'Kept at steady state', variables: outputs.map(leftName) }] : []),
       ...(unchanged.length > 0 ? [{ title: 'Unchanged', variables: unchanged.map(leftName) }] : []),
     ],
     flux,
