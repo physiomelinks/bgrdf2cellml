@@ -9,3 +9,19 @@ export { Polynomial, monomial, monomialKey } from './poly/polynomial.js'
 export type { Monomial, Term } from './poly/polynomial.js'
 export { cofactor, determinant, minorMatrix } from './poly/matrix.js'
 export type { PolynomialMatrix } from './poly/matrix.js'
+export * as F from './poly/fraction.js'
+export type { Fraction } from './poly/fraction.js'
+export { SteadyStateError, type Issue, type IssueCode } from './issues.js'
+export { evaluateAst, type Definitions } from './evaluate.js'
+export {
+  ATOM_PREFIX,
+  atomValues,
+  fractionToAst,
+  isAtom,
+  normalise,
+  polynomialToAst,
+  type ExpAtom,
+  type Laurent,
+  type NormaliseOptions,
+  type Normalised,
+} from './normalise.js'
