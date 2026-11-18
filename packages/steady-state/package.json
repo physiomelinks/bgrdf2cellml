@@ -1,0 +1,55 @@
+{
+  "name": "@physiomelinks/steady-state",
+  "description": "Derive steady-state flux expressions for enzyme and transporter cycles, symbolically, from their mass-action or bond-graph equations.",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/physiomelinks/celldl2cellml.git",
+    "directory": "packages/steady-state"
+  },
+  "homepage": "https://github.com/physiomelinks/celldl2cellml/tree/main/packages/steady-state#readme",
+  "bugs": {
+    "url": "https://github.com/physiomelinks/celldl2cellml/issues"
+  },
+  "keywords": [
+    "steady-state",
+    "king-altman",
+    "enzyme-kinetics",
+    "bond-graph",
+    "cellml"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "prepack": "tsc --build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@physiomelinks/math-ast": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

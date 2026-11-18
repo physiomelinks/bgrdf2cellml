@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/math-ast" },
     { "path": "packages/cellml-units" },
-    { "path": "packages/bg2cellml" }
+    { "path": "packages/bg2cellml" },
+    { "path": "packages/steady-state" }
   ]
 }
