@@ -25,3 +25,4 @@ export {
   type NormaliseOptions,
   type Normalised,
 } from './normalise.js'
+export { solveCycle, splitEquations, type CycleSolution, type CycleSpec, type Result, type SplitEquations } from './cycle.js'
