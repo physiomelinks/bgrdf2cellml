@@ -1,7 +1,7 @@
 {
   "name": "@physiomelinks/steady-state",
   "description": "Derive steady-state flux expressions for enzyme and transporter cycles, symbolically, from their mass-action or bond-graph equations.",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -43,6 +43,10 @@
     "@physiomelinks/math-ast": "workspace:^"
   },
   "devDependencies": {
+    "@physiomelinks/bg2cellml": "workspace:^",
+    "@xmldom/xmldom": "^0.9.8",
+    "libcellml.js": "^0.7.1",
+    "oxigraph": "^0.5.9",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },

@@ -12,6 +12,7 @@ export type IssueCode =
   | 'unknown-variable'
   | 'circular-definition'
   | 'not-thermodynamically-consistent'
+  | 'no-held-species'
 
 export interface Issue {
   readonly code: IssueCode

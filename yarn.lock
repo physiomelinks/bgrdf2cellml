@@ -330,7 +330,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@physiomelinks/steady-state@workspace:packages/steady-state"
   dependencies:
+    "@physiomelinks/bg2cellml": "workspace:^"
     "@physiomelinks/math-ast": "workspace:^"
+    "@xmldom/xmldom": "npm:^0.9.8"
+    libcellml.js: "npm:^0.7.1"
+    oxigraph: "npm:^0.5.9"
     typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.18"
   languageName: unknown

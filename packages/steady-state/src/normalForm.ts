@@ -122,6 +122,8 @@ export function commonForm(solution: CycleSolution, options: CommonFormOptions):
       variables.push({ name, value: times(ci(K), ci(q)) })
     } else held.set(q, q)
   }
+  if (held.size === 0)
+    fail('no-held-species', 'No held species were found: name the species the cycle moves (constants or states outside it) in `solutes`')
   const isHeld = (v: string) => held.has(v)
   const isAtom = (v: string) => atoms.has(v)
   const drive = [...held.keys(), ...atoms.keys()]

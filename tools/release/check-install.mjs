@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Install the three packages into an empty npm project, as a user would, and
+// Install the packages into an empty npm project, as a user would, and
 // use them: convert BG-RDF's example_RC in Node, and typecheck a TypeScript
 // file against their declarations (work plan chunk 8.2's "done when").
 //
@@ -17,7 +17,9 @@ import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
-const PACKAGES = ['math-ast', 'cellml-units', 'bg2cellml']
+const PACKAGES = ['math-ast', 'cellml-units', 'bg2cellml', 'steady-state']
+// Released at their own versions, outside the fixed group
+const OWN_VERSION = new Set(['steady-state'])
 
 const { values } = parseArgs({
   options: { packed: { type: 'boolean' }, version: { type: 'string' }, keep: { type: 'boolean' } },
@@ -42,7 +44,7 @@ try {
       return tarball
     })
   } else {
-    specs = PACKAGES.map((name) => `@physiomelinks/${name}@${values.version}`)
+    specs = PACKAGES.map((name) => `@physiomelinks/${name}@${OWN_VERSION.has(name) ? manifest(name).version : values.version}`)
   }
   const peers = Object.entries(manifest('bg2cellml').peerDependencies).map(([name, range]) => `${name}@${range}`)
 
@@ -89,6 +91,16 @@ if (output.cellml === undefined || !output.cellml.includes('<model') || output.m
   throw new Error(\`bg2cellml: \${JSON.stringify(output, null, 2)}\`)
 }
 console.log(\`Converted example_RC: \${output.cellml.length} characters of CellML\`)
+
+// steady-state: E + S <-> C <-> E + P, written as mass action, solved for its flux
+const { deriveSteadyState } = await import('@physiomelinks/steady-state')
+const { ci, eq, minus, times } = await import('@physiomelinks/math-ast')
+const d = (q) => ({ type: 'Derivative', expression: ci(q), variable: ci('t') })
+const v1 = times(ci('k1'), minus(times(ci('E'), ci('S')), ci('C')))
+const v2 = times(ci('k2'), minus(ci('C'), times(ci('E'), ci('P'))))
+const mm = deriveSteadyState([eq(ci('v1'), v1), eq(ci('v2'), v2), eq(d('E'), minus(ci('v2'), ci('v1'))), eq(d('C'), minus(ci('v1'), ci('v2')))], { cycleStates: ['E', 'C'], flux: 'v1', solutes: ['S', 'P'] })
+if (!mm.ok || mm.common === undefined) throw new Error(\`steady-state: \${JSON.stringify(mm.issues)}\`)
+console.log('Derived the Michaelis–Menten flux')
 `,
   )
   run('node', ['check.mjs'], dir)

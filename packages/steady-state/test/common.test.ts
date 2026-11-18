@@ -71,6 +71,24 @@ describe('the common form', () => {
     expect(verify(sglt1(), spec, result, { fastScale: 1e9 }).maxRelativeError).toBeLessThan(1e-5)
   })
 
+  it('asks for held species when the model has none as states', () => {
+    // Michaelis–Menten with S and P as constants
+    const d = (q: string) => ({ type: 'Derivative' as const, expression: ci(q), variable: ci('t') })
+    const v1 = { type: 'Multiply' as const, children: [ci('k1'), minus({ type: 'Multiply' as const, children: [ci('E'), ci('S')] }, ci('C'))] }
+    const v2 = { type: 'Multiply' as const, children: [ci('k2'), minus(ci('C'), { type: 'Multiply' as const, children: [ci('E'), ci('P')] })] }
+    const equations = [
+      { type: 'Equal' as const, left: ci('v1'), right: v1 },
+      { type: 'Equal' as const, left: ci('v2'), right: v2 },
+      { type: 'Equal' as const, left: d('E'), right: minus(ci('v2'), ci('v1')) },
+      { type: 'Equal' as const, left: d('C'), right: minus(ci('v1'), ci('v2')) },
+    ]
+    const without = deriveSteadyState(equations, { cycleStates: ['E', 'C'], flux: 'v1' })
+    expect(without.issues.map((i) => i.code)).toEqual(['no-held-species'])
+    const named = deriveSteadyState(equations, { cycleStates: ['E', 'C'], flux: 'v1', solutes: ['S', 'P'] })
+    expect(named.issues).toEqual([])
+    expect(named.common!.reactants).toEqual([['S', 1]])
+  })
+
   it('reports SGLT1 with slippage as exact but not in the common form', () => {
     const spec: SteadyStateSpec = { cycleStates: ['q_1', 'q_2', 'q_3', 'q_4', 'q_5', 'q_6'], flux: 'v_R3' }
     const result = deriveSteadyState(sglt1(0.5, 0.5, true), spec)

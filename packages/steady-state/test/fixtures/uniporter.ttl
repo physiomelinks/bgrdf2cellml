@@ -1,0 +1,55 @@
+@prefix bgf: <https://bg-rdf.org/ontologies/bondgraph-framework#> .
+@prefix cdt: <https://w3id.org/cdt/> .
+@prefix tpl: <https://bg-rdf.org/templates/> .
+
+@prefix : <#> .
+
+# An electrogenic uniporter of a cation A: E1 outward-facing, E2 outward with
+# A, E3 inward with A, E4 inward-facing. The loaded carrier's translocation Rt
+# moves one positive charge into the cell, coupled to the membrane's capacitor
+# through two transformers as in bg2cellml's electrogenic_reaction fixture:
+# the forward potential sees -F phi/2 (TF_f), the reverse +F phi/2 (TF_r).
+
+:model
+    a bgf:BondgraphModel ;
+    bgf:usesTemplate tpl:chemical.ttl, tpl:electrical.ttl ;
+    bgf:hasBondElement :E1, :E2, :E3, :E4, :Ao, :Ai, :Rb, :Rt, :Ru, :Rr, :C_m ;
+    bgf:hasJunctionStructure :TF_f, :TF_r .
+
+:E1 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E1" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "2 mol-1"^^cdt:ucum ] .
+:E2 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E2" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "5 mol-1"^^cdt:ucum ] .
+:E3 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E3" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "5 mol-1"^^cdt:ucum ] .
+:E4 a bgf:ChemicalStorageNode ; bgf:hasSpecies "E4" ; bgf:hasValue "0.25 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "2 mol-1"^^cdt:ucum ] .
+:Ao a bgf:ChemicalStorageNode ; bgf:hasSpecies "Ao" ; bgf:hasValue "0.14 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "1 mol-1"^^cdt:ucum ] .
+:Ai a bgf:ChemicalStorageNode ; bgf:hasSpecies "Ai" ; bgf:hasValue "0.01 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "1 mol-1"^^cdt:ucum ] .
+
+:Rb a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "100 mol/s"^^cdt:ucum ] .
+:Rt a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "0.5 mol/s"^^cdt:ucum ] .
+:Ru a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "100 mol/s"^^cdt:ucum ] .
+:Rr a bgf:ChemicalReactionNode ; bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "0.3 mol/s"^^cdt:ucum ] .
+
+:C_m a bgf:ElectricalCapacitiveNode ; bgf:hasValue "-0.006 C"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "C" ; bgf:hasValue "0.1 F"^^cdt:ucum ] .
+:TF_f a bgf:TransformerNode ; bgf:hasValue "-48242.666 C/mol"^^cdt:ucum .
+:TF_r a bgf:TransformerNode ; bgf:hasValue "2.07285049e-05 mol/C"^^cdt:ucum .
+
+:E1.Rb bgf:hasSource :E1 ; bgf:hasTarget :Rb .
+:Ao.Rb bgf:hasSource :Ao ; bgf:hasTarget :Rb .
+:Rb.E2 bgf:hasSource :Rb ; bgf:hasTarget :E2 .
+:E2.Rt bgf:hasSource :E2 ; bgf:hasTarget :Rt .
+:Rt.E3 bgf:hasSource :Rt ; bgf:hasTarget :E3 .
+:E3.Ru bgf:hasSource :E3 ; bgf:hasTarget :Ru .
+:Ru.E4 bgf:hasSource :Ru ; bgf:hasTarget :E4 .
+:Ru.Ai bgf:hasSource :Ru ; bgf:hasTarget :Ai .
+:E4.Rr bgf:hasSource :E4 ; bgf:hasTarget :Rr .
+:Rr.E1 bgf:hasSource :Rr ; bgf:hasTarget :E1 .
+:C_m.TF_f bgf:hasSource :C_m ; bgf:hasTarget :TF_f .
+:TF_f.Rt bgf:hasSource :TF_f ; bgf:hasTarget :Rt .
+:Rt.TF_r bgf:hasSource :Rt ; bgf:hasTarget :TF_r .
+:TF_r.C_m bgf:hasSource :TF_r ; bgf:hasTarget :C_m .

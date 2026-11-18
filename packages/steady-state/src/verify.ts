@@ -100,12 +100,17 @@ export function verify(equations: readonly Equation[], spec: SteadyStateSpec, re
     const b = states.map((_q, j) => (j === states.length - 1 ? values[total]! : 0))
     const q = solveLinear(A, b)
     const numeric = evaluateAst(fluxNode, { ...values, ...Object.fromEntries(states.map((name, k) => [name, q[k]!])) }, definitions)
-    const derived = F.evaluate(result.solution.flux, atomValues(result.solution.atoms, values))
+    // Opaque variables the derived flux keeps, such as a membrane potential, from their definitions
+    const env: Record<string, number> = { ...values }
+    const sol = result.solution
+    for (const v of new Set([...sol.flux.num.variables(), ...sol.flux.den.variables(), ...[...sol.atoms.values()].flatMap((a) => a.base.map(([x]) => x))]))
+      if (env[v] === undefined && definitions.has(v)) env[v] = evaluateAst(ci(v), { ...values, ...Object.fromEntries(states.map((name, k) => [name, q[k]!])) }, definitions)
+    const derived = F.evaluate(sol.flux, atomValues(sol.atoms, env))
     const scale = Math.max(Math.abs(numeric), Math.abs(derived), Number.MIN_VALUE)
     maxRelativeError = Math.max(maxRelativeError, Math.abs(numeric - derived) / scale)
     if (result.common !== undefined) {
       const lumped = new Map<string, AstNode>([...definitions, ...[...result.common.variables, ...result.common.definitions].map(({ name, value }) => [name, value] as const)])
-      const common = evaluateAst(result.common.flux, values, lumped)
+      const common = evaluateAst(result.common.flux, env, lumped)
       commonFormError = Math.max(commonFormError ?? 0, Math.abs(common - derived) / Math.max(Math.abs(derived), Number.MIN_VALUE))
     }
   }
