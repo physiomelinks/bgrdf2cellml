@@ -326,6 +326,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@physiomelinks/steady-state@workspace:packages/steady-state":
+  version: 0.0.0-use.local
+  resolution: "@physiomelinks/steady-state@workspace:packages/steady-state"
+  dependencies:
+    "@physiomelinks/math-ast": "workspace:^"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^4.0.18"
+  languageName: unknown
+  linkType: soft
+
 "@playwright/test@npm:^1.64.1":
   version: 1.64.1
   resolution: "@playwright/test@npm:1.64.1"
