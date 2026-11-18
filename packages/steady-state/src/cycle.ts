@@ -111,8 +111,14 @@ function solve(equations: readonly Equation[], spec: CycleSpec): CycleSolution {
     return coefficients
   }
 
-  const matrix = stateRates.map((f, j) => {
-    const coefficients = linear(f, `d${states[j]}/dt`)
+  // One common denominator for every rate, so the rows keep their relative scale
+  for (const [j, f] of stateRates.entries()) linear(f, `d${states[j]}/dt`)
+  let rateDen = Polynomial.one
+  for (const f of stateRates) if (rateDen.divideExact(f.den) === undefined) rateDen = rateDen.mul(f.den)
+  const rows = stateRates.map((f) => f.num.mul(rateDen.divideExact(f.den)!))
+
+  const matrix = rows.map((row, j) => {
+    const coefficients = linear(F.fromPolynomial(row), `d${states[j]}/dt`)
     if (coefficients.has('')) fail('nonlinear-in-states', `d${states[j]}/dt has a term without any of the cycle's states`, states[j])
     return states.map((q) => coefficients.get(q) ?? Polynomial.zero)
   })
@@ -138,10 +144,11 @@ function solve(equations: readonly Equation[], spec: CycleSpec): CycleSolution {
   // The flux, with q_j = total · w_j / Σw; through slow reactions only, in the fast limit
   let fluxFraction = flux
   if (fast.size > 0) {
-    for (const [j, f] of stateRates.entries())
-      if (!F.isPolynomial(f)) fail('unsupported-construct', `d${states[j]}/dt has a denominator, which the fast limit doesn't handle`, states[j])
-    const rows = stateRates.map((f) => f.num)
-    fluxFraction = F.fraction(withoutFastReactions(flux.num, rows.map((r) => r.mul(flux.den)), fast), flux.den)
+    // flux − Σ α_k rate_k, over the denominator flux.den · rateDen
+    fluxFraction = F.fraction(
+      withoutFastReactions(flux.num.mul(rateDen), rows.map((r) => r.mul(flux.den)), fast),
+      flux.den.mul(rateDen),
+    )
   }
   const fluxCoefficients = linear(fluxFraction, 'The flux')
   const q = Polynomial.variable(total)

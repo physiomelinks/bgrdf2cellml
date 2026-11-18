@@ -2,7 +2,17 @@
 
 Derives steady-state flux expressions for enzyme and transporter cycles, symbolically, from their mass-action or bond-graph equations: the reductions of Hunter, Ai & Nickerson (2025) for GLUT2 and SGLT1, done automatically.
 
-Work in progress. This first part is the exact algebra it is built on:
+```js
+import { deriveSteadyState, verify } from '@physiomelinks/steady-state'
+
+const spec = { label: 'GLUT2', cycleStates: ['q_1', 'q_2', 'q_3', 'q_4'], flux: 'v_R2', fast: ['kappa_R3', 'kappa_R4'] }
+const result = deriveSteadyState(equations, spec) // equations: math-ast Equation[]
+result.common.flux        // v = κ/Φ · {q̄_Ao − q̄_Ai}, in named lumped parameters
+result.common.definitions // kappa_m_GLUT2, k_Ao_GLUT2, …, Phi_GLUT2 in the model's parameters
+verify(equations, spec, result).maxRelativeError // a numeric check against the full cycle
+```
+
+It is built from these parts:
 
 - `Q`: exact rationals on BigInt, reading decimals such as `0.726` exactly;
 - `Polynomial`: sparse multivariate polynomials with rational coefficients (add, multiply, substitute, evaluate, content, exact division);
@@ -20,3 +30,14 @@ Work in progress. This first part is the exact algebra it is built on:
   - States joined by fast reactions are pooled in their equilibrium proportions, and the pooled cycle is solved.
   - A flux through a fast reaction is rewritten in terms of slow ones using the steady-state balances.
   - This reproduces GLUT2's eqs 19–20 (Hunter et al. 2025) and Kir's eq 19 (sodium homeostasis paper).
+- `deriveSteadyState` writes the result in the **common transporter form** of the sodium homeostasis paper (eq 24):
+
+  `v = κ/Φ · {R · Q_drive/Q_drive^eq − Q_eq · P · exp(zFu/RT)}`
+
+  - The bracket is a *difference* (`q̄_i − q̄_o`, with `Φ = 1 + Σ m/k_m`) or a *ratio* (`(q̄_Na,o/q̄_Na,i)²·q̄_Glc,o/q̄_Glc,i − e^{2Fu/RT}`).
+  - It can be written in concentrations (`concentrations: { q_Ao: 'V_o' }`).
+  - An optional driver reaction (ATP hydrolysis) gets its own ratio.
+  - It reports the net charge `z` and the reversal potential.
+  - `relations` adds constraints such as Kir's charge balance before solving.
+  - A flux with more than one cycle (slippage) is still solved exactly, but is reported as not having this form.
+- `verify` checks a result numerically, independently of the algebra: at random values it solves the model's own cycle equations with floating-point linear algebra.

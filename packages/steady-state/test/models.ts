@@ -92,3 +92,44 @@ export function solveLinear(A: number[][], b: number[]): number[] {
   }
   return x
 }
+
+/** `z F u_m` (J/mol), with z a number or a parameter's name. */
+export const zFu = (z: number | string): AstNode => times(typeof z === 'number' ? cn(z) : ci(z), ci('F'), ci('u_m'))
+
+/**
+ * SGLT1 (Hunter et al. 2025, Fig 9): states 1 E_o, 2 E_o2Na, 3 E_o2NaGlc,
+ * 4 E_i2NaGlc, 5 E_i2Na, 6 E_i; charge moves in Re1 (z1) and Re6 (z2).
+ */
+export const sglt1 = (z1: number | string = 0.5, z2: number | string = 0.5, slippage = false): Equation[] =>
+  bondGraph([
+    { name: 'R1', forward: { 1: 1, Nao: 2 }, reverse: { 2: 1 }, forwardPotential: times(cn(-1), zFu(z1)), reversePotential: zFu(z1) },
+    { name: 'R2', forward: { 2: 1, Glco: 1 }, reverse: { 3: 1 } },
+    { name: 'R3', forward: { 3: 1 }, reverse: { 4: 1 } },
+    { name: 'R4', forward: { 4: 1 }, reverse: { 5: 1, Glci: 1 } },
+    { name: 'R5', forward: { 5: 1 }, reverse: { 6: 1, Nai: 2 } },
+    { name: 'R6', forward: { 6: 1 }, reverse: { 1: 1 }, forwardPotential: times(cn(-1), zFu(z2)), reversePotential: zFu(z2) },
+    ...(slippage ? [{ name: 'R7', forward: { 2: 1 }, reverse: { 5: 1 } }] : []),
+  ])
+
+/** Kir (sodium homeostasis paper, Fig 8): states 1 E_iK, 2 E_oK, 3 E, with charge movement z1…z6. */
+export const kir = (): Equation[] =>
+  bondGraph([
+    { name: 'R1', forward: { 3: 1, Ki: 1 }, reverse: { 1: 1 }, forwardPotential: zFu('z1'), reversePotential: zFu('z2') },
+    { name: 'R2', forward: { 1: 1 }, reverse: { 2: 1 }, forwardPotential: zFu('z3'), reversePotential: zFu('z4') },
+    { name: 'R3', forward: { 2: 1 }, reverse: { 3: 1, Ko: 1 }, forwardPotential: zFu('z5'), reversePotential: zFu('z6') },
+  ])
+
+/**
+ * NKA, Post–Albers (sodium homeostasis paper, Fig 6): states 1 E_i,
+ * 2 E_i·ATP·3Na, 3 E_i·Pi·H·(3Na), 4 E_o·Pi·H, 5 E_o·Pi·H·2K, 6 E_o·(2K); one
+ * net charge out per cycle, split z1 (Na⁺ release) and z2 (K⁺ release).
+ */
+export const nka = (z1: number | string = 'z1', z2: number | string = 'z2'): Equation[] =>
+  bondGraph([
+    { name: 'R1', forward: { 1: 1, Nai: 3, ATP: 1 }, reverse: { 2: 1 } },
+    { name: 'R2', forward: { 2: 1, H2O: 1 }, reverse: { 3: 1, ADP: 1 } },
+    { name: 'R3', forward: { 3: 1 }, reverse: { 4: 1, Nao: 3 }, forwardPotential: zFu(z1) },
+    { name: 'R4', forward: { 4: 1, Ko: 2 }, reverse: { 5: 1 } },
+    { name: 'R5', forward: { 5: 1 }, reverse: { 6: 1, Pi: 1, H: 1 } },
+    { name: 'R6', forward: { 6: 1 }, reverse: { 1: 1, Ki: 2 }, forwardPotential: zFu(z2) },
+  ])
