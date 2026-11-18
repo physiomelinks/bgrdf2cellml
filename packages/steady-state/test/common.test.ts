@@ -26,6 +26,8 @@ describe('the common form', () => {
     expect(c.reactants).toEqual([['qbar_Ao', 1]])
     expect(c.products).toEqual([['qbar_Ai', 1]])
     expect(c.phi.terms.map((t) => t.k?.name)).toEqual(expect.arrayContaining(['k_Ao_GLUT2', 'k_Ai_GLUT2', 'k_Ai_Ao_GLUT2']))
+    expect(c.phi.terms[0]!.monomial).toEqual([]) // 1 + …
+    expect(c.phi.terms.at(-1)!.k?.name).toBe('k_Ai_Ao_GLUT2') // … + q̄o q̄i/k
     // Table 3's parameters give eq 20's km values
     const values = { K_1: 33.2, K_2: 4.25e3, K_3: 344.59, K_4: 1.99, kappa_R1: 0.36, kappa_R2: 0.26, q_tot: 1 }
     const k = (name: string) => evaluateWith(result, ci(name), values)
