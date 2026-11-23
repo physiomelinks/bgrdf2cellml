@@ -1,5 +1,5 @@
 {
-  "name": "bg-2-cellml",
+  "name": "bgrdf2cellml",
   "description": "Generate CellML 2.0 from BG-RDF bond graph models, in TypeScript",
   "private": true,
   "license": "Apache-2.0",
