@@ -613,9 +613,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bg-2-cellml@workspace:.":
+"bgrdf2cellml@workspace:.":
   version: 0.0.0-use.local
-  resolution: "bg-2-cellml@workspace:."
+  resolution: "bgrdf2cellml@workspace:."
   dependencies:
     "@changesets/cli": "npm:^3.0.3"
     "@types/node": "npm:^24.0.0"
