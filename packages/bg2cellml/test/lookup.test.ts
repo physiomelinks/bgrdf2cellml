@@ -68,7 +68,7 @@ describe('elementTemplate()', () => {
 
   // The fork's templates make more choices, where Python's framework had one or two
   const FORK_CHOICES: Record<string, string[]> = {
-    'Reaction Chemical': ['SaturatingChemicalReaction'],
+    'Reaction Chemical': ['GainChemicalReaction', 'SaturatingChemicalReaction'],
     'QuantityStore Chemical': ['SaturatingChemicalConcentration'],
     'Resistance Hydraulic': ['BernoulliHydraulicResistor'],
   }
@@ -101,7 +101,7 @@ describe('elementTemplate()', () => {
 
   it('says why a class and domain finds nothing', () => {
     expect(framework.templateIssue(bgf('Reaction'), bgf('Chemical'))).toBe(
-      'bgf:Reaction in bgf:Chemical is ambiguous: it could be bgf:ChemicalReaction, bgf:NKETransporter, bgf:SaturatingChemicalReaction. Give the template instead.',
+      'bgf:Reaction in bgf:Chemical is ambiguous: it could be bgf:ChemicalReaction, bgf:GainChemicalReaction, bgf:NKETransporter, bgf:SaturatingChemicalReaction. Give the template instead.',
     )
     expect(framework.templateIssue(bgf('Resistance'), bgf('Chemical'))).toBe('bgf:Resistance has no template in bgf:Chemical')
     expect(framework.templatesOfClass(bgf('Resistance'), bgf('Chemical'))).toEqual([])

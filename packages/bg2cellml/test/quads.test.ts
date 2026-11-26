@@ -64,7 +64,7 @@ describe('Converter.loadFramework()', () => {
 
   it('loads the whole framework from Turtle', () => {
     const { domains, elementTemplates, junctions, compositeTemplates } = fromTurtle as Record<string, unknown[]>
-    expect([domains!.length, elementTemplates!.length, junctions!.length, compositeTemplates!.length]).toEqual([4, 25, 27, 17]) // CellDL/BG-RDF's 22, 22 and 14, and the fork's additions
+    expect([domains!.length, elementTemplates!.length, junctions!.length, compositeTemplates!.length]).toEqual([4, 26, 28, 18]) // CellDL/BG-RDF's 22, 22 and 14, and the fork's additions
   })
 
   it('gives the same framework from oxigraph quads in named graphs', () => {

@@ -61,6 +61,6 @@ describe('BG-RDF framework queries', () => {
     const domains = graph.select(DOMAIN_QUERY).map((row) => fragment(row.get('domain')!.value))
     expect(domains).toEqual(['Chemical', 'Electrical', 'Hydraulic', 'Mechanical'])
     // 22 in CellDL/BG-RDF, and the fork's 3
-    expect(graph.select(ELEMENT_TEMPLATE_DEFINITIONS)).toHaveLength(25)
+    expect(graph.select(ELEMENT_TEMPLATE_DEFINITIONS)).toHaveLength(26)
   })
 })
