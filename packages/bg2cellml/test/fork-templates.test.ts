@@ -1,6 +1,7 @@
 /**
  * physiomelinks/BG-RDF's additions, in models: the saturating reaction and
- * store, the Bernoulli resistor, and transformer and gyrator nodes. The
+ * store, the reaction with a gain, the Bernoulli resistor, and transformer and
+ * gyrator nodes. The gain reaction's model is ours; the other
  * models and the values checked are Finbar Argus's (BG-Tools
  * feat/constitutive-laws, tests/test_constitutive_laws.py), evaluated here
  * at the start of a libOpenCOR simulation.
@@ -73,6 +74,17 @@ describe("the fork's templates", () => {
     // The saturating relations' parameters are in the manifest
     expect(result.elements['Re']!.variables.find((variable) => variable.name === 'sigma_Re')?.role).toBe('parameter')
     expect(result.elements['q_B']!.variables.find((variable) => variable.name === 'k_sat_q_B')?.role).toBe('parameter')
+  })
+
+  it('runs a reaction with a gain: the mass-action rate times the gain', async () => {
+    const result = await run(model('gain_reaction'))
+    expect(result.ok).toBe(true)
+    const { values, rates } = initial(result.cellml!)
+    const [uA, kappa, gain, q, K] = [1000, 0.5, 0.37, 0.2, 2]
+    const v = gain * kappa * (Math.exp(uA / RT) - K * q)
+    expect(values['v_Re']! / v).toBeCloseTo(1, 12)
+    expect(rates['q_B']! / v).toBeCloseTo(1, 12)
+    expect(result.elements['Re']!.variables.find((variable) => variable.name === 'gain_Re')?.role).toBe('parameter')
   })
 
   it.each(['si', 'cellular'] as const)('runs a Bernoulli resistor between two hydraulic stores, in %s', async (system) => {

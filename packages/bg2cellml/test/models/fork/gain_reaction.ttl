@@ -1,0 +1,29 @@
+@prefix bgf: <https://bg-rdf.org/ontologies/bondgraph-framework#> .
+@prefix cdt: <https://w3id.org/cdt/> .
+@prefix tpl: <https://bg-rdf.org/templates/> .
+
+@prefix : <#> .
+
+# A -> B through a reaction with a gain: A a chemostat (a chemical potential source, its own zero node), B a store.
+
+:gain_reaction
+    a bgf:BondgraphModel ;
+    bgf:usesTemplate tpl:chemical.ttl ;
+    bgf:hasBondElement :Se_A, :Re, :q_B .
+
+:Se_A
+    a bgf:ChemicalPotential ;
+    bgf:hasValue "1000 J/mol"^^cdt:ucum .
+
+:Re
+    a bgf:GainChemicalReactionNode ;
+    bgf:parameterValue [ bgf:varName "kappa" ; bgf:hasValue "0.5 mol/s"^^cdt:ucum ] ,
+                       [ bgf:varName "gain" ; bgf:hasValue "0.37 1"^^cdt:ucum ] .
+
+:q_B
+    a bgf:ChemicalStorageNode ;
+    bgf:hasValue "0.2 mol"^^cdt:ucum ;
+    bgf:parameterValue [ bgf:varName "K" ; bgf:hasValue "2 mol-1"^^cdt:ucum ] .
+
+:Se_A.Re bgf:hasSource :Se_A ; bgf:hasTarget :Re .
+:Re.q_B bgf:hasSource :Re ; bgf:hasTarget :q_B .

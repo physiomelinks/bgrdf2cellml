@@ -255,18 +255,24 @@ export function loadPythonFramework(manifest: Manifest = loadManifest()): Python
  * files (it can't read `<root/>`), so they can't be regenerated from them.
  */
 export const FORK_ADDITIONS = {
-  commit: '3318ae8b0f6e977a6b21e7094992c53cdd5d0032',
+  commit: 'cd1e4e91b0ec6c07939bd1180cfdecdc9c03de4c',
   /** Each changed file's hash at `commit`. */
   files: {
     'schema/ontology.ttl': 'c5416ed4e9047e70081d95a454c11d3223d446135e83aa2d7e1ed43cd68982bf',
-    'templates/chemical.ttl': '9370cee365410293bf651ea0c084223524d2e680aba5a5f2537de77c32623f04',
+    'templates/chemical.ttl': 'd6f420a13c9dcddd2e68281d74575c8a106073f5a19dcf94dfadbaf370e64ce0',
     'templates/hydraulic.ttl': 'e05370c547dff0817944a9f9dd45391262a8dd788c15dc01a6d001cfe52d79ff',
   } as Readonly<Record<string, string>>,
-  elementTemplates: ['BernoulliHydraulicResistor', 'SaturatingChemicalConcentration', 'SaturatingChemicalReaction'],
-  compositeTemplates: ['BernoulliHydraulicResistanceNode', 'SaturatingChemicalReactionNode', 'SaturatingChemicalStorageNode'],
+  elementTemplates: ['BernoulliHydraulicResistor', 'GainChemicalReaction', 'SaturatingChemicalConcentration', 'SaturatingChemicalReaction'],
+  compositeTemplates: [
+    'BernoulliHydraulicResistanceNode',
+    'GainChemicalReactionNode',
+    'SaturatingChemicalReactionNode',
+    'SaturatingChemicalStorageNode',
+  ],
   /** Junction structures: the composites, and the transform node's two kinds. */
   junctions: [
     'BernoulliHydraulicResistanceNode',
+    'GainChemicalReactionNode',
     'GyratorNode',
     'SaturatingChemicalReactionNode',
     'SaturatingChemicalStorageNode',
